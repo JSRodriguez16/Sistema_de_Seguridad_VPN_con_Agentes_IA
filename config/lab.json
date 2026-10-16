@@ -1,0 +1,10 @@
+{
+  "interface": "wg0",
+  "server_ip": "10.77.0.1",
+  "peers": {"10.77.0.2": "cliente-1", "10.77.0.3": "cliente-2"},
+  "window_seconds": 10,
+  "probability_threshold": 0.65,
+  "scan_ports_threshold": 20,
+  "high_rate_bytes_per_second": 1000000,
+  "handshake_recent_seconds": 180
+}
