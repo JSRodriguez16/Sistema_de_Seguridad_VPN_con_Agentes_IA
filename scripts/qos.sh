@@ -45,12 +45,13 @@ if [[ $action == apply ]]; then
   remove_owned
   touch "$marker"
   trap 'remove_owned' ERR
-  priority=$((rate / 4))
-  standard=$((rate - priority))
+  # Compute integer kbit/s so rates such as 10 Mbit/s retain the exact 25/75 split.
+  priority_kbit=$((rate * 1000 / 4))
+  standard_kbit=$((rate * 1000 - priority_kbit))
   tc qdisc replace dev "$iface" root handle 77: htb default 20
   tc class add dev "$iface" parent 77: classid 77:1 htb rate "${rate}mbit" ceil "${rate}mbit"
-  tc class add dev "$iface" parent 77:1 classid 77:10 htb rate "${priority}mbit" ceil "${rate}mbit" prio 0
-  tc class add dev "$iface" parent 77:1 classid 77:20 htb rate "${standard}mbit" ceil "${rate}mbit" prio 1
+  tc class add dev "$iface" parent 77:1 classid 77:10 htb rate "${priority_kbit}kbit" ceil "${rate}mbit" prio 0
+  tc class add dev "$iface" parent 77:1 classid 77:20 htb rate "${standard_kbit}kbit" ceil "${rate}mbit" prio 1
   tc qdisc add dev "$iface" parent 77:10 handle 710: fq_codel
   tc qdisc add dev "$iface" parent 77:20 handle 720: fq_codel
   tc filter add dev "$iface" protocol ip parent 77: prio 1 u32 match ip tos 0xb8 0xfc flowid 77:10
